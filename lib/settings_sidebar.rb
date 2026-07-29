@@ -258,7 +258,7 @@ module Exhibit
         patterns: %w[hdr exr],
         on_added: ->(path) { set_hdri(path) },
         on_deleted: -> { set_hdri('') },
-      ).tap { |fr| HdriManager.list.each { |p| fr.add_suggestion(p) } }
+      ).tap { |fr| HdriManager.suggestions.each { |hdri, thumb| fr.add_suggestion(hdri, thumb) } }
     end
 
     def set_hdri(path)

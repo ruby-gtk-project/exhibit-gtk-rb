@@ -44,13 +44,26 @@ module Exhibit
       end
     end
 
-    def add_suggestion(path)
+    def add_suggestion(path, thumbnail = nil)
       Gtk::FlowBoxChild.new.tap do |child|
-        child.child = Gtk::Label.new(File.basename(path, '.*')).tap { |l| l.ellipsize = :end }
+        child.child = suggestion_widget(path, thumbnail)
         child.tooltip_text = File.basename(path)
         @suggestion_paths[child] = path
         suggestions_box.append(child)
         suggestions_box.visible = true
+      end
+    end
+
+    def suggestion_widget(path, thumbnail)
+      if thumbnail
+        Gtk::Picture.new.tap do |p|
+          p.file = Gio::File.new_for_path(thumbnail)
+          p.content_fit = :cover
+          p.set_size_request(72, 48)
+          p.add_css_class('card')
+        end
+      else
+        Gtk::Label.new(File.basename(path, '.*')).tap { |l| l.ellipsize = :end }
       end
     end
 
