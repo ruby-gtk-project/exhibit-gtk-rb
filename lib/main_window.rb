@@ -10,6 +10,8 @@ require_relative 'f3d_viewer'
 require_relative 'settings_model'
 require_relative 'settings_sidebar'
 require_relative 'shortcuts_dialog'
+require_relative 'configuration_store'
+require_relative 'save_preset_dialog'
 
 module Exhibit
   class MainWindow
@@ -38,6 +40,12 @@ module Exhibit
 
         add_action('save-image') { save_image }
         add_view_action('show-shortcuts', '<primary>question') { show_shortcuts }
+        window.add_action(preset_action)
+        add_action('save-preset') { show_save_preset }
+        # Deviating from the active preset flips it to "Custom".
+        settings.on_change do |_key, _v, category|
+          if %i[view other].include?(category) && !@applying_preset then check_preset_deviation end
+        end
 
         home_button.signal_connect('clicked') { viewer.reset_to_bounds }
         open_button.signal_connect('clicked') { open_file_chooser }
@@ -81,8 +89,74 @@ module Exhibit
 
     def load_file(path)
       @file = path
+      if settings.get('auto-best') then apply_best_preset(path) end
       show('3d') # map the GLArea so it realizes and the f3d engine comes up
       viewer.load(path)
+    end
+
+    # ---- presets / configurations ----------------------------------------------
+
+    def presets = @presets ||= ConfigurationStore.new
+
+    def preset_action
+      @preset_action ||= Gio::SimpleAction.new('preset', GLib::VariantType.new('s'), GLib::Variant.new('general')).tap do |a|
+        a.signal_connect('change-state') do |action, state|
+          key = as_string(state)
+          action.state = GLib::Variant.new(key)
+          apply_preset(key)
+        end
+      end
+    end
+
+    # Ruby-GNOME hands a stateful action's value back as a String in some paths
+    # and a GLib::Variant in others; normalise to a String.
+    def as_string(value)
+      if value.is_a?(String) then value else value.get_string end
+    end
+
+    def apply_preset(key)
+      unless key == 'custom'
+        presets[key].then do |config|
+          if config then set_preset_settings(config) end
+        end
+      end
+    end
+
+    def set_preset_settings(config)
+      @applying_preset = true
+      settings.apply_all(settings.customizable_defaults)
+      settings.apply_all(config['view-settings'])
+      settings.apply_all(config['other-settings'])
+      @applying_preset = false
+    end
+
+    def apply_best_preset(path)
+      key = presets.match(path)
+      preset_action.state = GLib::Variant.new(key)
+      apply_preset(key)
+    end
+
+    def check_preset_deviation
+      key = as_string(preset_action.state)
+      unless key == 'custom'
+        if deviates_from?(key) then preset_action.state = GLib::Variant.new('custom') end
+      end
+    end
+
+    def deviates_from?(key)
+      config = presets[key]
+      expected = settings.customizable_defaults.merge(config['view-settings']).merge(config['other-settings'])
+      expected.any? { |k, v| settings.get(k) != v }
+    end
+
+    def show_save_preset
+      SavePresetDialog.new(parent: window, on_save: method(:save_preset)).present
+    end
+
+    def save_preset(name, extensions)
+      key = presets.save(name, extensions, settings.view_settings, settings.other_settings)
+      preset_section.append(presets.name_of(key), "win.preset::#{key}")
+      preset_action.state = GLib::Variant.new(key)
     end
 
     def open_file_chooser
@@ -330,9 +404,24 @@ module Exhibit
       @primary_menu ||= Gio::Menu.new.tap do |m|
         m.append('New Window', 'app.new-window')
         m.append('Save as Image…', 'win.save-image')
+        m.append_submenu('Presets', preset_menu)
         m.append_submenu('Appearance', theme_menu)
         m.append_section(nil, help_section)
         m.append('Quit', 'app.quit')
+      end
+    end
+
+    def preset_menu
+      @preset_menu ||= Gio::Menu.new.tap do |m|
+        m.append_section(nil, preset_section)
+        m.append('Save Current as Preset…', 'win.save-preset')
+      end
+    end
+
+    def preset_section
+      @preset_section ||= Gio::Menu.new.tap do |m|
+        m.append('Custom', 'win.preset::custom')
+        presets.keys.each { |key| m.append(presets.name_of(key), "win.preset::#{key}") }
       end
     end
 

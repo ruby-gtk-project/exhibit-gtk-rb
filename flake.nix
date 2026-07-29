@@ -98,6 +98,9 @@
           # are pointer stubs and HdriManager skips them.
           mkdir -p $out/share/exhibit/hdris
           cp examples/hdris/*.hdr $out/share/exhibit/hdris/ 2>/dev/null || true
+          # Built-in render presets (ConfigurationStore reads this + the user dir).
+          mkdir -p $out/share/exhibit/data
+          cp data/configurations.json $out/share/exhibit/data/
           runHook postInstall
         '';
         # wrapGAppsHook4 assembles gappsWrapperArgs (GI_TYPELIB_PATH, the pixbuf

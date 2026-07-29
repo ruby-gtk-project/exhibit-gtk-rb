@@ -1,0 +1,66 @@
+{
+    "general": {
+	"name": "General",
+        "formats": ".*()",
+        "view-settings": {},
+        "other-settings": {}
+    },
+    "3d_printing": {
+        "name": "3D Printing",
+        "formats": ".*(stl|3mf)",
+        "view-settings": {
+            "up": "+Z",
+            "grid": true,
+            "grid-absolute": true,
+            "translucency-support": true
+        },
+        "other-settings": {}
+    },
+    "mechanical": {
+        "name": "CAD Models",
+        "formats": ".*(step|stp|iges|igs|off|3ds)",
+        "view-settings": {
+            "up": "+Z",
+            "ambient-occlusion": false
+        },
+        "other-settings": {}
+    },
+    "point_cloud": {
+        "name": "Point Cloud",
+        "formats": ".*(ply)",
+        "view-settings": {
+            "point-size": 2.0,
+            "up": "-X",
+            "scivis-component": -2,
+            "translucency-support": true,
+            "cells": false,
+            "scivis-enabled": true,
+            "grid": false
+        },
+        "other-settings": {
+            "point-up": false
+        }
+    },
+    "splat": {
+        "name": "Splat",
+        "formats": ".*(splat)",
+        "view-settings": {
+            "anti-aliasing": true,
+            "tone-mapping": true,
+	    "sprites-size": 1.0,
+	    "sprites-type": "gaussian",
+	    "sprite-enabled": true,
+	    "scivis-enabled": true,
+	    "scivis-component": -2,
+	    "cells": false,
+	    "up": "-Y",
+	    "tone-mapping": false,
+	    "grid": false,
+	    "anti-aliasing": false,
+	    "translucency-support": false
+        },
+        "other-settings": {
+            "point-up": false
+        }
+    }
+}

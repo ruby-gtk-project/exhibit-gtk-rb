@@ -129,6 +129,37 @@ module Exhibit
 
     def to_h = @values.dup
 
+    # Defaults for the user-customizable keys (view + other), used as the base
+    # when applying a preset.
+    def customizable_defaults
+      result = {}
+      (VIEW_KEYS.keys + OTHER_KEYS).each do |key|
+        if DEFAULTS.key?(key) then result[key] = DEFAULTS[key] end
+      end
+      result
+    end
+
+    def apply_all(hash) = hash.each { |key, value| set(key, value) }
+
+    # Current values of the user-customizable keys (for saving a preset / diffing).
+    def customizable
+      result = {}
+      (VIEW_KEYS.keys + OTHER_KEYS).each { |key| result[key] = @values[key] }
+      result
+    end
+
+    def view_settings
+      result = {}
+      VIEW_KEYS.each_key { |key| result[key] = @values[key] }
+      result
+    end
+
+    def other_settings
+      result = {}
+      OTHER_KEYS.each { |key| result[key] = @values[key] }
+      result
+    end
+
     def notify(key, value)
       @observers.each { |observer| observer.call(key, value, category(key)) }
     end
