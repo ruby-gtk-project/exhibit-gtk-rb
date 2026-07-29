@@ -1,5 +1,6 @@
 require:
   - ./cops/begin_block_assignment.rb
+  - ./cops/no_conditional_assignment.rb
   - ./cops/no_modifier_if.rb
   - ./cops/no_return.rb
 
@@ -30,6 +31,11 @@ Local/NoModifierIf:
 # Bans the `return` keyword. The method's last expression is its return
 # value; guards must be structural (if/unless/case), not short-circuits.
 Local/NoReturn:
+  Enabled: true
+
+# Bans `x = if/case/ternary`. The conditional must make the assignment inside
+# each branch rather than hiding the target behind the expression.
+Local/NoConditionalAssignment:
   Enabled: true
 
 # Multi-line method calls: arg #1 on its own line, every subsequent arg too.

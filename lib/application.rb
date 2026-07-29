@@ -34,6 +34,27 @@ module Exhibit
         quit.signal_connect('activate') { a.quit }
         a.add_action(quit)
         a.set_accels_for_action('app.quit', ['<Primary>q'])
+        a.add_action(theme_action)
+      end
+    end
+
+    # Stateful string action (follow / light / dark) driving the Adwaita colour
+    # scheme; the menu items target it via "app.theme::<name>".
+    def theme_action
+      Gio::SimpleAction.new('theme', GLib::VariantType.new('s'), GLib::Variant.new('follow')).tap do |action|
+        action.signal_connect('activate') do |act, param|
+          act.state = param
+          apply_theme(param.get_string)
+        end
+      end
+    end
+
+    def apply_theme(name)
+      manager = Adwaita::StyleManager.default
+      case name
+      when 'light' then manager.color_scheme = Adwaita::ColorScheme::FORCE_LIGHT
+      when 'dark' then manager.color_scheme = Adwaita::ColorScheme::FORCE_DARK
+      else manager.color_scheme = Adwaita::ColorScheme::DEFAULT
       end
     end
 

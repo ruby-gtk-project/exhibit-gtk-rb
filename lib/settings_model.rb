@@ -40,7 +40,6 @@ module Exhibit
       'hdri-file' => 'render.hdri.file',
       'blur-background' => 'render.background.blur.enable',
       'blur-coc' => 'render.background.blur.coc',
-      'bg-color' => 'render.background.color',
       'up' => 'scene.up_direction',
       'orthographic' => 'scene.camera.orthographic',
       'animation-index' => 'scene.animation.index',
@@ -49,7 +48,9 @@ module Exhibit
       'inverse' => 'model.volume.inverse',
     }.freeze
 
-    OTHER_KEYS = %w[use-color point-up auto-reload].freeze
+    # bg-color is not a plain view option: the effective background is computed
+    # from use-color + bg-color + the light/dark theme (see MainWindow).
+    OTHER_KEYS = %w[use-color bg-color point-up auto-reload].freeze
     INTERNAL_KEYS = %w[auto-best sidebar-show].freeze
 
     DEFAULTS = {

@@ -345,7 +345,11 @@ module Exhibit
     def advance_play
       step = (time_adjustment.upper - time_adjustment.lower) / 200
       t = time_adjustment.value + step
-      time_adjustment.value = t >= time_adjustment.upper ? time_adjustment.lower : t
+      if t >= time_adjustment.upper
+        time_adjustment.value = time_adjustment.lower
+      else
+        time_adjustment.value = t
+      end
       @viewer.animation_time = time_adjustment.value
       @playing
     end

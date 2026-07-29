@@ -55,7 +55,11 @@ module Exhibit
         settings.on_change do |key, value, _category|
           settings.view_option(key).then { |option| if option then viewer.set_option(option, value) end }
         end
+        # The background is computed from use-color + bg-color + the theme.
+        settings.on_change { |key, _v, _c| if %w[use-color bg-color].include?(key) then update_background_color end }
+        style_manager.signal_connect('notify::dark') { update_background_color }
         settings.sync
+        update_background_color
 
         @file.then { |f| if f then load_file(f) else show('startup') end }
       end
@@ -96,7 +100,23 @@ module Exhibit
       window.title = "Exhibit — #{File.basename(path)}"
       show('3d')
       settings_sidebar.refresh_animation
+      update_background_color # a reload re-inits the engine, resetting the bg
     end
+
+    # Effective background: the custom colour when "Use Custom Color" is on,
+    # otherwise follow the Adwaita light/dark theme (Exhibit's grey / white).
+    def update_background_color
+      if settings.get('use-color')
+        color = settings.get('bg-color')
+      elsif style_manager.dark?
+        color = [0.117, 0.117, 0.117]
+      else
+        color = [1.0, 1.0, 1.0]
+      end
+      viewer.set_option('render.background.color', color)
+    end
+
+    def style_manager = @style_manager ||= Adwaita::StyleManager.default
 
     def on_viewer_error(path)
       if @loaded_once then send_toast("Can't open #{File.basename(path)}") else show('error') end
@@ -170,7 +190,20 @@ module Exhibit
       end
     end
 
-    def primary_menu = @primary_menu ||= Gio::Menu.new.tap { |m| m.append('Quit', 'app.quit') }
+    def primary_menu
+      @primary_menu ||= Gio::Menu.new.tap do |m|
+        m.append_submenu('Appearance', theme_menu)
+        m.append('Quit', 'app.quit')
+      end
+    end
+
+    def theme_menu
+      Gio::Menu.new.tap do |m|
+        m.append('Follow System', 'app.theme::follow')
+        m.append('Light', 'app.theme::light')
+        m.append('Dark', 'app.theme::dark')
+      end
+    end
 
     def drop_target = @drop_target ||= Gtk::DropTarget.new(Gdk::FileList.gtype, :copy)
 
