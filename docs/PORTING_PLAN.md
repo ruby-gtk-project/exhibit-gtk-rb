@@ -350,7 +350,7 @@ any class >10 widget methods. Delete dead code. Document Ruby-GNOME quirks disco
 - [x] Phase 6 — preset views (front/right/top/iso) + WASD pan + arrow tilt (gimbal) + accels
 - [x] Phase 7 — reload + auto-reload (mtime watcher) + preserve orientation (camera state shim)
 - [x] Phase 8 — animation (shim time-range/load + playback loop; done as part of Phase 3)
-- [ ] Phase 9 — presets / configurations (auto-best + save-settings dialog)
+- [x] Phase 9 — presets / configurations (bundled + user; auto-best on load; Custom deviation; save-preset dialog)
 - [x] Phase 10 — image export (save PNG + Open toast)
 - [~] Phase 11 — About dialog, shortcuts window, new-window, full menu done; window/theme **persistence** still to do
 - [ ] Phase 12 — refinement
