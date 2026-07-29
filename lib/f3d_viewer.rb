@@ -140,11 +140,11 @@ class F3DViewer
   def orbit(e, dx, dy)
     F3D.camera_azimuth(e, (@drag_prev_x - dx) * 0.5)
     F3D.camera_elevation(e, -(@drag_prev_y - dy) * 0.5)
-    F3D.camera_set_view_up(e, up_vector) # keep the model upright, like always_point_up
+    F3D.camera_set_view_up(e, up_buffer) # keep the model upright, like always_point_up
   end
 
   def pan(e, dx, dy)
-    dist = camera_distance(e)
+    dist = distance
     F3D.camera_pan(
       e,
       (@drag_prev_x - dx) * (0.0000001 * @width + 0.001 * dist),
@@ -157,16 +157,118 @@ class F3DViewer
     @engine.then { |e| if e then F3D.camera_dolly(e, 1 - 0.1 * dy); gl_area.queue_render end }
   end
 
-  # camera distance from the origin, used to scale pan speed (as Exhibit does)
-  def camera_distance(e)
-    FFI::MemoryPointer.new(:double, 3).then do |buf|
-      F3D.camera_get_position(e, buf)
-      buf.read_array_of_double(3).then { |p| Math.sqrt(p[0]**2 + p[1]**2 + p[2]**2) }
+  # ---- preset views + keyboard navigation ------------------------------------
+  # Ported from Exhibit's front/right/top/isometric_view, pan_action and tilt.
+  # The scene's up direction (scene.up_direction option) drives all of them.
+
+  UP_VECTORS = {
+    '-X' => [-1.0, 0.0, 0.0],
+    '+X' => [1.0, 0.0, 0.0],
+    '-Y' => [0.0, -1.0, 0.0],
+    '+Y' => [0.0, 1.0, 0.0],
+    '-Z' => [0.0, 0.0, -1.0],
+    '+Z' => [0.0, 0.0, 1.0],
+  }.freeze
+
+  def front_view = set_view(rot1(up_vec), up_vec)
+  def right_view = set_view(rot2(up_vec), up_vec)
+  def top_view = set_view(up_vec, rot2(up_vec))
+
+  def isometric_view
+    set_position(vec_scale(vec_norm(vec_add(vec_add(rot1(up_vec), rot2(up_vec)), up_vec)), 1000), up_vec)
+  end
+
+  # WASD pan: move the camera in view space, scaled by distance (as Exhibit does).
+  def pan_by(x, y, z)
+    @engine.then do |e|
+      if e
+        v = distance / 40
+        F3D.camera_pan(e, x * v, y * v, z * v)
+        gl_area.queue_render
+      end
     end
   end
 
-  # +Y up, as a 3-double buffer for camera_set_view_up
-  def up_vector = FFI::MemoryPointer.new(:double, 3).tap { |b| b.write_array_of_double([0.0, 1.0, 0.0]) }
+  # Arrow-key tilt: pan then restore the focal point so the camera orbits it;
+  # vertical tilt is clamped near the poles (gimbal limit) as Exhibit does.
+  def tilt_by(dx, dy)
+    @engine.then { |e| if e then apply_tilt(e, dx, dy) end }
+  end
+
+  def apply_tilt(e, dx, dy)
+    if dy.zero? || tilt_allowed?(dy)
+      v = distance / 40
+      focal = focal_point
+      F3D.camera_pan(e, dx * v, dy * v, 0.0)
+      F3D.camera_set_focal(e, write_vec3(focal))
+      F3D.camera_set_view_up(e, up_buffer)
+      gl_area.queue_render
+    end
+  end
+
+  def tilt_allowed?(dy)
+    dist, dir = camera_to_focal_distance
+    limit = distance / 10
+    dist > limit || (dy.positive? && dir.negative?) || (dy.negative? && dir.positive?)
+  end
+
+  def camera_to_focal_distance
+    mask = up_vec.map(&:abs)
+    pos = position
+    foc = focal_point
+    pos_h = vec_mask(pos, mask)
+    foc_h = vec_mask(foc, mask)
+    [vec_dist(vec_sub(pos_h, pos), vec_sub(foc_h, foc)), height_sign(vec_sub(pos_h, foc_h))]
+  end
+
+  def height_sign(diff)
+    sign = 1
+    n = diff.find { |x| x != 0 }
+    if n && n.negative? then sign = -1 end
+    sign
+  end
+
+  # position = focal + offset·1000 (front/right/top); reset_to_bounds then frames it.
+  def set_view(offset, view_up)
+    @engine.then { |e| if e then apply_camera(e, vec_add(focal_point, vec_scale(offset, 1000)), view_up) end }
+  end
+
+  def set_position(pos, view_up)
+    @engine.then { |e| if e then apply_camera(e, pos, view_up) end }
+  end
+
+  def apply_camera(e, pos, view_up)
+    F3D.camera_set_position(e, write_vec3(pos))
+    F3D.camera_set_view_up(e, write_vec3(view_up))
+    F3D.camera_reset_to_bounds(e)
+    gl_area.queue_render
+  end
+
+  # ---- small vector + camera-read helpers ------------------------------------
+
+  def up_vec = UP_VECTORS[@options['scene.up_direction'] || '+Y']
+  def up_buffer = write_vec3(up_vec)
+  def rot1(u) = [u[2], u[0], u[1]]
+  def rot2(u) = [u[1], u[2], u[0]]
+  def vec_add(a, b) = [a[0] + b[0], a[1] + b[1], a[2] + b[2]]
+  def vec_sub(a, b) = [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
+  def vec_scale(a, s) = [a[0] * s, a[1] * s, a[2] * s]
+  def vec_mask(a, m) = [a[0] * m[0], a[1] * m[1], a[2] * m[2]]
+  def vec_len(a) = Math.sqrt((a[0]**2) + (a[1]**2) + (a[2]**2))
+  def vec_norm(a) = vec_scale(a, 1.0 / vec_len(a))
+  def vec_dist(a, b) = vec_len(vec_sub(a, b))
+
+  def write_vec3(a) = FFI::MemoryPointer.new(:double, 3).tap { |b| b.write_array_of_double(a.map(&:to_f)) }
+
+  def read_vec3
+    buf = FFI::MemoryPointer.new(:double, 3)
+    yield(buf)
+    buf.read_array_of_double(3)
+  end
+
+  def position = read_vec3 { |buf| F3D.camera_get_position(@engine, buf) }
+  def focal_point = read_vec3 { |buf| F3D.camera_get_focal(@engine, buf) }
+  def distance = vec_len(position)
 
   def on_realize(area)
     # Send f3d's warnings to stderr (forceStdErr) rather than its in-window

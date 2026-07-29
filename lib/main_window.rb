@@ -61,6 +61,8 @@ module Exhibit
         settings.sync
         update_background_color
 
+        setup_camera_actions
+
         @file.then { |f| if f then load_file(f) else show('startup') end }
       end
     end
@@ -125,6 +127,34 @@ module Exhibit
     def send_toast(message) = toast_overlay.add_toast(Adwaita::Toast.new(message))
 
     def show(name) = stack.set_visible_child_name(name)
+
+    # ---- camera view + navigation actions (keyboard) ---------------------------
+
+    def setup_camera_actions
+      add_view_action('front-view', '<primary>1') { viewer.front_view }
+      add_view_action('right-view', '<primary>3') { viewer.right_view }
+      add_view_action('top-view', '<primary>7') { viewer.top_view }
+      add_view_action('isometric-view', '<primary>9') { viewer.isometric_view }
+      add_view_action('toggle-orthographic', '<primary>5') { toggle_orthographic }
+      add_view_action('move-forward', '<primary>w') { viewer.pan_by(0, 0, 1) }
+      add_view_action('move-left', '<primary>a') { viewer.pan_by(-1, 0, 0) }
+      add_view_action('move-backward', '<primary>s') { viewer.pan_by(0, 0, -1) }
+      add_view_action('move-right', '<primary>d') { viewer.pan_by(1, 0, 0) }
+      add_view_action('tilt-up', '<primary>Up') { viewer.tilt_by(0, 1) }
+      add_view_action('tilt-down', '<primary>Down') { viewer.tilt_by(0, -1) }
+      add_view_action('tilt-left', '<primary>Left') { viewer.tilt_by(-1, 0) }
+      add_view_action('tilt-right', '<primary>Right') { viewer.tilt_by(1, 0) }
+    end
+
+    def add_view_action(name, accel, &block)
+      Gio::SimpleAction.new(name).tap do |action|
+        action.signal_connect('activate') { block.call }
+        window.add_action(action)
+        @application.set_accels_for_action("win.#{name}", [accel])
+      end
+    end
+
+    def toggle_orthographic = settings.set('orthographic', !settings.get('orthographic'))
 
     # ---- widgets ---------------------------------------------------------------
 
