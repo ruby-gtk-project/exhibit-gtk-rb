@@ -16,6 +16,7 @@ module F3D
   attach_function :engine_new,     :f3d_engine_new, [:int], :pointer
   attach_function :engine_free,    :f3d_engine_free, [:pointer], :void
   attach_function :autoload_plugins, :f3d_autoload_plugins, [], :void
+  attach_function :log_set_verbose,  :f3d_log_set_verbose, [:int, :int], :void
 
   # scene
   attach_function :scene_supports, :f3d_scene_supports, [:pointer, :string], :int
@@ -25,6 +26,7 @@ module F3D
   # window / render
   attach_function :window_set_size, :f3d_window_set_size, [:pointer, :int, :int], :void
   attach_function :window_render,   :f3d_window_render, [:pointer], :int
+  attach_function :render_to_png,   :f3d_render_to_png, [:pointer, :string], :int
 
   # options (generic string setter over the whole f3d option namespace)
   attach_function :options_set_string, :f3d_options_set_string, [:pointer, :string, :string], :void

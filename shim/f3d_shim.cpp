@@ -52,6 +52,16 @@ void f3d_autoload_plugins() {
   try { engine::autoloadPlugins(); } catch (...) {}
 }
 
+// Route f3d's log to stderr instead of its in-window console. level is a
+// f3d::log::VerboseLevel (0=DEBUG..4=QUIET); force_stderr!=0 sends everything,
+// including debug/info, to stderr so we can capture warnings from the embedded
+// engine (which otherwise only surface via f3d's console badge).
+void f3d_log_set_verbose(int level, int force_stderr) {
+  try {
+    f3d::log::setVerboseLevel(static_cast<f3d::log::VerboseLevel>(level), force_stderr != 0);
+  } catch (...) {}
+}
+
 // ---- scene ------------------------------------------------------------------
 
 int f3d_scene_supports(engine* e, const char* path) {

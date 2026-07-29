@@ -16,7 +16,7 @@ module Exhibit
       'grid' => 'render.grid.enable',
       'grid-absolute' => 'render.grid.absolute',
       'grid-color' => 'render.grid.color',
-      'translucency-support' => 'render.effect.translucency_support',
+      'translucency-support' => 'render.effect.blending.enable',
       'tone-mapping' => 'render.effect.tone_mapping',
       'ambient-occlusion' => 'render.effect.ambient_occlusion',
       'anti-aliasing' => 'render.effect.antialiasing.enable',

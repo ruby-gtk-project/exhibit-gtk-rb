@@ -6,4 +6,7 @@
 
 require_relative '../lib/application'
 
-Exhibit::Application.new.build.run(ARGV)
+# tap(&:build) wires the app signals and returns the Exhibit::Application (build
+# itself returns the inner Gtk::Application), so .run is *our* run — the one that
+# prepends the program name so file args reach the 'open' handler.
+Exhibit::Application.new.tap(&:build).run(ARGV)

@@ -150,6 +150,10 @@ class F3DViewer
   def up_vector = FFI::MemoryPointer.new(:double, 3).tap { |b| b.write_array_of_double([0.0, 1.0, 0.0]) }
 
   def on_realize(area)
+    # Send f3d's warnings to stderr (forceStdErr) rather than its in-window
+    # console, so they don't light the console badge over the model. WARN level
+    # keeps the terminal quiet unless something's actually wrong.
+    F3D.log_set_verbose(2, 1)
     area.make_current
     area.error.then { |e| if e then warn("GLArea realize error: #{e.message}") end }
 
