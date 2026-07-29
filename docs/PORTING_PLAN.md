@@ -352,5 +352,11 @@ any class >10 widget methods. Delete dead code. Document Ruby-GNOME quirks disco
 - [x] Phase 8 — animation (shim time-range/load + playback loop; done as part of Phase 3)
 - [x] Phase 9 — presets / configurations (bundled + user; auto-best on load; Custom deviation; save-preset dialog)
 - [x] Phase 10 — image export (save PNG + Open toast)
-- [~] Phase 11 — About dialog, shortcuts window, new-window, full menu done; window/theme **persistence** still to do
-- [ ] Phase 12 — refinement
+- [x] Phase 11 — About, shortcuts window, new-window, full menu, and persistence (window size/sidebar/theme/auto-best via AppSettings JSON)
+- [x] Phase 12 — refinement: orthographic scroll-zoom; Ruby-GNOME quirks documented (docs/ruby-gnome-quirks.md); lint clean across 17 files; full app loads clean under xvfb
+
+**All phases complete — feature parity with the reference Exhibit.** The one
+thing never verified from this environment is the live GTK window's pixels
+(headless GL can't be screenshotted); everything else is verified by
+construction, binding logic, offscreen renders, and camera/preset/persistence
+round-trips.
