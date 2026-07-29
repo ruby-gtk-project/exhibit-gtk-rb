@@ -340,10 +340,10 @@ any class >10 widget methods. Delete dead code. Document Ruby-GNOME quirks disco
 
 ## 7. Progress tracker
 
-- [x] Phase 0a — viewer foundation (render + orbit/pan/zoom) — *reset-to-bounds/set_option still to add*
-- [ ] Phase 0b — add the `adwaita` gem + smoke test (prerequisite)
-- [ ] Phase 1 — app shell & layout
-- [ ] Phase 2 — SettingsModel + plumbing
+- [x] Phase 0a — viewer foundation (render + orbit/pan/zoom + reset-to-bounds + set_option)
+- [x] Phase 0b — added the `adwaita` gem; probed every needed widget (all construct)
+- [x] Phase 1 — app shell & layout (Application + MainWindow, OverlaySplitView, header, 4 stack states, open dialog, drag-drop, supports→error). *GUI construction verified headless; interactive open/drop/render pending a display.*
+- [x] Phase 2 — SettingsModel + plumbing (40 settings, 34 view→f3d-option map, observers push defaults to the viewer)
 - [ ] Phase 3 — sidebar UI (8 groups)
 - [ ] Phase 4 — background & theme
 - [ ] Phase 5 — HDRI

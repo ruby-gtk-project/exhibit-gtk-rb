@@ -10,8 +10,10 @@
 require_relative 'f3d'
 
 class F3DViewer
-  def initialize(file: nil)
+  def initialize(file: nil, on_loaded: nil, on_error: nil)
     @file = file
+    @on_loaded = on_loaded
+    @on_error = on_error
     @engine = nil
     @width = 1
     @height = 1
@@ -50,13 +52,24 @@ class F3DViewer
 
   def load(path)
     @file = path
-    gl_area.then do |a|
-      if @engine
-        F3D.scene_clear(@engine)
-        F3D.scene_add(@engine, path)
+    @engine.then { |e| if e then load_current end }
+  end
+
+  # Add @file to the scene, reporting success/failure through the callbacks.
+  # Requires a live engine (created on realize), so callers ensure the GLArea
+  # is mapped first.
+  def load_current
+    if F3D.scene_supports(@engine, @file) == 1
+      F3D.scene_clear(@engine)
+      if F3D.scene_add(@engine, @file) == 1
         F3D.camera_reset_to_bounds(@engine)
-        a.queue_render
+        gl_area.queue_render
+        @on_loaded&.call(@file)
+      else
+        @on_error&.call(@file)
       end
+    else
+      @on_error&.call(@file)
     end
   end
 
@@ -138,7 +151,7 @@ class F3DViewer
 
   def on_realize(area)
     area.make_current
-    area.error.then { |e| if e then warn("GLArea realize error: #{e.message}"); next end }
+    area.error.then { |e| if e then warn("GLArea realize error: #{e.message}") end }
 
     @engine = create_engine
     @engine.null?.then do |bad|
@@ -148,7 +161,7 @@ class F3DViewer
       else
         F3D.autoload_plugins
         apply_all_options
-        @file.then { |f| if f then F3D.scene_add(@engine, f); F3D.camera_reset_to_bounds(@engine) end }
+        @file.then { |f| if f then load_current end }
       end
     end
   end

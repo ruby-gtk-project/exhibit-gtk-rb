@@ -1,43 +1,9 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# Exhibit-rb — a Ruby GTK4 port of nokse22's Exhibit 3D viewer.
-# MVP: a window hosting the libf3d GLArea viewer. Pass a model path as argv[0].
+# Exhibit-rb entry point. HANDLES_OPEN means paths on argv arrive via the
+# application's 'open' signal (one window each); a bare launch shows startup.
 
-require 'gtk4'
-require_relative '../lib/f3d_viewer'
+require_relative '../lib/application'
 
-class ExhibitApp
-  def initialize(file: nil)
-    @file = file
-  end
-
-  def build
-    app.tap do
-      app.signal_connect('activate') do
-        app.add_window(window)
-
-        window.tap do |win|
-          win.title = 'Exhibit'
-          win.set_default_size(900, 600)
-          win.titlebar = header
-          win.child = viewer.build
-        end
-
-        window.present
-      end
-    end
-  end
-
-  def app = @app ||= Gtk::Application.new('email.kremlin.exhibit', :default_flags)
-  def window = @window ||= Gtk::ApplicationWindow.new(app)
-  def viewer = @viewer ||= F3DViewer.new(file: @file)
-
-  def header
-    @header ||= Gtk::HeaderBar.new.tap do |h|
-      h.title_widget = Gtk::Label.new('Exhibit')
-    end
-  end
-end
-
-ExhibitApp.new(file: ARGV[0]).build.run
+Exhibit::Application.new.build.run(ARGV)

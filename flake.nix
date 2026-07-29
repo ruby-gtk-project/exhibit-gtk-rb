@@ -84,6 +84,7 @@
         # typelibs / schemas / pixbuf loaders wrapGAppsHook4 must collect:
         buildInputs = with pkgs; [
           gtk4 libadwaita gdk-pixbuf pango graphene harfbuzz librsvg gobject-introspection glib
+          adwaita-icon-theme hicolor-icon-theme
         ];
         dontWrapGApps = true; # we wrap the ruby interpreter ourselves, below
 
