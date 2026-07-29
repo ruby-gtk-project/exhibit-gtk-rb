@@ -19,6 +19,7 @@ module F3D
   attach_function :readers_extensions, :f3d_engine_readers_extensions, [:pointer, :int], :void
   attach_function :log_set_verbose,  :f3d_log_set_verbose, [:int, :int], :void
   attach_function :lib_version,       :f3d_lib_version, [:pointer, :int], :void
+  attach_function :lib_info,          :f3d_lib_info, [:pointer, :int], :void
 
   # scene
   attach_function :scene_supports, :f3d_scene_supports, [:pointer, :string], :int

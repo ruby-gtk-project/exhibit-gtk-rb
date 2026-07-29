@@ -80,6 +80,7 @@ module Exhibit
         dialog.website = 'https://github.com/Nokse22/Exhibit'
         dialog.license_type = Gtk::License::GPL_3_0
         dialog.comments = f3d_version
+        dialog.debug_info = f3d_debug_info
         dialog.add_link('libf3d', 'https://f3d.app')
         dialog.present(app.active_window)
       end
@@ -89,6 +90,12 @@ module Exhibit
       buf = FFI::MemoryPointer.new(:char, 256)
       F3D.lib_version(buf, 256)
       buf.read_string
+    end
+
+    def f3d_debug_info
+      buf = FFI::MemoryPointer.new(:char, 8192)
+      F3D.lib_info(buf, 8192)
+      "GTK #{Gtk::MAJOR_VERSION}.#{Gtk::MINOR_VERSION}.#{Gtk::MICRO_VERSION}\n\n#{buf.read_string}"
     end
 
     # Launches a saved image in the user's default viewer (the "Open" button on

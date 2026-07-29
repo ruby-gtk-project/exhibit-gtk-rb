@@ -89,6 +89,29 @@ void f3d_lib_version(char* buf, int len) {
   } catch (...) { if (len > 0) { buf[0] = '\0'; } }
 }
 
+// A multi-line debug block (version, build, modules, backends) for the About
+// dialog's debug info.
+void f3d_lib_info(char* buf, int len) {
+  try {
+    auto info = engine::getLibInfo();
+    std::string s;
+    s += "F3D Version: " + info.VersionFull + "\n";
+    s += "Build Date: " + info.BuildDate + "\n";
+    s += "Build System: " + info.BuildSystem + "\n";
+    s += "VTK Version: " + info.VTKVersion + "\n";
+    s += "License: " + info.License + "\n\nModules:\n";
+    for (const auto& m : info.Modules) {
+      s += "- " + m.first + ": " + (m.second ? "yes" : "no") + "\n";
+    }
+    s += "\nBackends:\n";
+    for (const auto& b : engine::getRenderingBackendList()) {
+      s += "- " + b.first + ": " + (b.second ? "yes" : "no") + "\n";
+    }
+    std::strncpy(buf, s.c_str(), len - 1);
+    buf[len - 1] = '\0';
+  } catch (...) { if (len > 0) { buf[0] = '\0'; } }
+}
+
 // ---- scene ------------------------------------------------------------------
 
 int f3d_scene_supports(engine* e, const char* path) {
