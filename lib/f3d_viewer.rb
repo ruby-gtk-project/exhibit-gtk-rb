@@ -153,6 +153,26 @@ class F3DViewer
       a.signal_connect('resize') { |_w, width, height| on_resize(width, height) }
       a.add_controller(drag_gesture)
       a.add_controller(scroll_controller)
+      a.add_controller(zoom_gesture)
+    end
+  end
+
+  # Touchpad/touchscreen pinch → dolly, tracking scale relative to gesture start
+  # (mirrors Exhibit's on_zoom_scale_changed).
+  def zoom_gesture
+    @zoom_gesture ||= Gtk::GestureZoom.new.tap do |g|
+      g.signal_connect('begin') { @prev_scale = 1.0 }
+      g.signal_connect('scale-changed') { |_g, scale| on_pinch(scale) }
+    end
+  end
+
+  def on_pinch(scale)
+    @engine.then do |e|
+      if e
+        F3D.camera_dolly(e, 1 - (@prev_scale || 1.0) + scale)
+        @prev_scale = scale
+        gl_area.queue_render
+      end
     end
   end
 
