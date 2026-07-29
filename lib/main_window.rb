@@ -95,6 +95,7 @@ module Exhibit
       @loaded_once = true
       window.title = "Exhibit — #{File.basename(path)}"
       show('3d')
+      settings_sidebar.refresh_animation
     end
 
     def on_viewer_error(path)
@@ -131,7 +132,7 @@ module Exhibit
     def header_bar = @header_bar ||= Adwaita::HeaderBar.new
     def stack = @stack ||= Gtk::Stack.new
     def settings = @settings ||= SettingsModel.new
-    def settings_sidebar = @settings_sidebar ||= SettingsSidebar.new(settings)
+    def settings_sidebar = @settings_sidebar ||= SettingsSidebar.new(settings, viewer)
 
     def viewer
       @viewer ||= F3DViewer.new(

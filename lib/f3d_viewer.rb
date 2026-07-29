@@ -50,6 +50,25 @@ class F3DViewer
     @engine.then { |e| if e then F3D.camera_reset_to_bounds(e); gl_area.queue_render end }
   end
 
+  # ---- animation -------------------------------------------------------------
+  # [start, end] of the loaded scene's animation; [0, 0] means not animated.
+  def animation_range
+    FFI::MemoryPointer.new(:double, 2).then do |buf|
+      @engine.then { |e| if e then F3D.scene_animation_time_range(e, buf) end }
+      buf.read_array_of_double(2)
+    end
+  end
+
+  def animation_time=(time)
+    @engine.then { |e| if e then F3D.scene_load_animation_time(e, time); gl_area.queue_render end }
+  end
+
+  # Re-add the current file (e.g. after changing scene.animation.index, which is
+  # read at scene-add time).
+  def reload
+    @engine.then { |e| if e then load_current end }
+  end
+
   def load(path)
     @file = path
     @engine.then { |e| if e then load_current end }

@@ -22,6 +22,8 @@ module F3D
   attach_function :scene_supports, :f3d_scene_supports, [:pointer, :string], :int
   attach_function :scene_add,      :f3d_scene_add, [:pointer, :string], :int
   attach_function :scene_clear,    :f3d_scene_clear, [:pointer], :void
+  attach_function :scene_animation_time_range, :f3d_scene_animation_time_range, [:pointer, :pointer], :void
+  attach_function :scene_load_animation_time,  :f3d_scene_load_animation_time, [:pointer, :double], :void
 
   # window / render
   attach_function :window_set_size, :f3d_window_set_size, [:pointer, :int, :int], :void

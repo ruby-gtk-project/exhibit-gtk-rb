@@ -344,7 +344,7 @@ any class >10 widget methods. Delete dead code. Document Ruby-GNOME quirks disco
 - [x] Phase 0b — added the `adwaita` gem; probed every needed widget (all construct)
 - [x] Phase 1 — app shell & layout (Application + MainWindow, OverlaySplitView, header, 4 stack states, open dialog, drag-drop, supports→error). *GUI construction verified headless; interactive open/drop/render pending a display.*
 - [x] Phase 2 — SettingsModel + plumbing (40 settings, 34 view→f3d-option map, observers push defaults to the viewer)
-- [~] Phase 3 — settings sidebar (ViewStack Render/Model/Scene/More; switches, spins, combos, colour buttons two-way bound both directions, verified headless). Deferred: scivis "Coloration" combo (multi-setting logic) and the HDRI file row (Phase 5). Background/use-color gating is Phase 4.
+- [x] Phase 3 — settings sidebar, complete (ViewStack Render/Model/Scene/More; switches/spins/combos/colour buttons two-way bound; scivis Coloration combo; Animation group with shim time-range + playback loop; HDRI FileRow + HdriManager). Background/use-color gating is Phase 4. HDRI suggestions need `git lfs pull` to hydrate the bundled assets (machinery is in place, list is empty until then).
 - [ ] Phase 3 — sidebar UI (8 groups)
 - [ ] Phase 4 — background & theme
 - [ ] Phase 5 — HDRI

@@ -79,6 +79,18 @@ void f3d_scene_clear(engine* e) {
   try { e->getScene().clear(); } catch (...) {}
 }
 
+// ---- animation --------------------------------------------------------------
+
+// out[0]=start, out[1]=end. Equal (0,0) means the scene has no animation.
+void f3d_scene_animation_time_range(engine* e, double out[2]) {
+  try { auto r = e->getScene().animationTimeRange(); out[0] = r.first; out[1] = r.second; }
+  catch (...) { out[0] = 0.0; out[1] = 0.0; }
+}
+
+void f3d_scene_load_animation_time(engine* e, double t) {
+  try { e->getScene().loadAnimationTime(t); } catch (...) {}
+}
+
 // ---- window / render --------------------------------------------------------
 
 void f3d_window_set_size(engine* e, int w, int h) {
