@@ -180,7 +180,7 @@ module Exhibit
     end
 
     def show_save_preset
-      SavePresetDialog.new(parent: window, on_save: method(:save_preset)).present
+      SavePresetDialog.new(parent: window, on_save: method(:save_preset), supported: supported_extensions).present
     end
 
     def save_preset(name, extensions)
@@ -192,8 +192,27 @@ module Exhibit
     def open_file_chooser
       Gtk::FileDialog.new.tap do |d|
         d.title = 'Open Model'
+        d.default_filter = supported_filter
         d.open(window, nil) { |dialog, result| on_open_response(dialog, result) }
       end
+    end
+
+    # A file filter of every format f3d can read (from the shim's readers list).
+    def supported_filter
+      Gtk::FileFilter.new.tap do |f|
+        f.name = 'All supported formats'
+        supported_extensions.each { |ext| f.add_suffix(ext) }
+      end
+    end
+
+    def supported_extensions
+      @supported_extensions ||= read_supported_extensions
+    end
+
+    def read_supported_extensions
+      buf = FFI::MemoryPointer.new(:char, 8192)
+      F3D.readers_extensions(buf, 8192)
+      buf.read_string.split(',').reject(&:empty?).uniq.sort
     end
 
     def on_open_response(dialog, result)
@@ -343,6 +362,7 @@ module Exhibit
     def add_file_chooser
       Gtk::FileDialog.new.tap do |d|
         d.title = 'Add File to Scene'
+        d.default_filter = supported_filter
         d.open(window, nil) { |dialog, result| on_add_response(dialog, result) }
       end
     end

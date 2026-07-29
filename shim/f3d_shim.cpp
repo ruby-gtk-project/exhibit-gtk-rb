@@ -62,6 +62,23 @@ void f3d_log_set_verbose(int level, int force_stderr) {
   } catch (...) {}
 }
 
+// Comma-joined list of every extension f3d can read (for file-dialog filters).
+// Autoloads plugins first so it works before any engine exists.
+void f3d_engine_readers_extensions(char* buf, int len) {
+  try {
+    engine::autoloadPlugins();
+    std::string s;
+    for (const auto& reader : engine::getReadersInfo()) {
+      for (const auto& ext : reader.Extensions) {
+        if (!s.empty()) { s += ","; }
+        s += ext;
+      }
+    }
+    std::strncpy(buf, s.c_str(), len - 1);
+    buf[len - 1] = '\0';
+  } catch (...) { if (len > 0) { buf[0] = '\0'; } }
+}
+
 // Writes "f3d <version> · VTK <version>" into buf (used by the About dialog).
 void f3d_lib_version(char* buf, int len) {
   try {

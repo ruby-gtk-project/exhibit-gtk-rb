@@ -9,9 +9,10 @@ require 'adwaita'
 
 module Exhibit
   class SavePresetDialog
-    def initialize(parent:, on_save:)
+    def initialize(parent:, on_save:, supported: [])
       @parent = parent
       @on_save = on_save
+      @supported = supported
     end
 
     def present = window.present
@@ -79,7 +80,20 @@ module Exhibit
     end
 
     def extensions_row
-      @extensions_row ||= Adwaita::EntryRow.new.tap { |r| r.title = 'Extensions (e.g. stl, obj)' }
+      @extensions_row ||= Adwaita::EntryRow.new.tap do |r|
+        r.title = 'Extensions (e.g. stl, obj)'
+        r.signal_connect('changed') { validate_extensions(r) }
+      end
+    end
+
+    # Flag the row when any entered extension isn't one f3d can read.
+    def validate_extensions(row)
+      entered = row.text.split(',').map { |e| e.strip.downcase }.reject(&:empty?)
+      if entered.empty? || entered.all? { |e| @supported.include?(e) }
+        row.remove_css_class('error')
+      else
+        row.add_css_class('error')
+      end
     end
   end
 end
