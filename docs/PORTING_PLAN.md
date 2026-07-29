@@ -345,13 +345,12 @@ any class >10 widget methods. Delete dead code. Document Ruby-GNOME quirks disco
 - [x] Phase 1 — app shell & layout (Application + MainWindow, OverlaySplitView, header, 4 stack states, open dialog, drag-drop, supports→error). *GUI construction verified headless; interactive open/drop/render pending a display.*
 - [x] Phase 2 — SettingsModel + plumbing (40 settings, 34 view→f3d-option map, observers push defaults to the viewer)
 - [x] Phase 3 — settings sidebar, complete (ViewStack Render/Model/Scene/More; switches/spins/combos/colour buttons two-way bound; scivis Coloration combo; Animation group with shim time-range + playback loop; HDRI FileRow + HdriManager). Background/use-color gating is Phase 4. HDRI suggestions need `git lfs pull` to hydrate the bundled assets (machinery is in place, list is empty until then).
-- [ ] Phase 3 — sidebar UI (8 groups)
-- [ ] Phase 4 — background & theme
-- [ ] Phase 5 — HDRI
-- [ ] Phase 6 — camera views & keyboard
+- [x] Phase 4 — background follows theme + Appearance (follow/light/dark) menu; added `Local/NoConditionalAssignment` cop
+- [~] Phase 5 — HDRI: FileRow + HdriManager + XDG seeding done; thumbnails still simplified (filenames)
+- [x] Phase 6 — preset views (front/right/top/iso) + WASD pan + arrow tilt (gimbal) + accels
 - [ ] Phase 7 — orientation preserve + reload + auto-reload
-- [ ] Phase 8 — animation
-- [ ] Phase 9 — presets / configurations
-- [ ] Phase 10 — image export
-- [ ] Phase 11 — app polish
+- [x] Phase 8 — animation (shim time-range/load + playback loop; done as part of Phase 3)
+- [ ] Phase 9 — presets / configurations (auto-best + save-settings dialog)
+- [x] Phase 10 — image export (save PNG + Open toast)
+- [~] Phase 11 — About dialog, shortcuts window, new-window, full menu done; window/theme **persistence** still to do
 - [ ] Phase 12 — refinement
