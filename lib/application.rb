@@ -21,7 +21,10 @@ module Exhibit
       end
     end
 
-    def run(argv = ARGV) = app.run(argv)
+    # GApplication.run expects argv[0] to be the program name (C convention);
+    # Ruby's ARGV omits it, so prepend $0 or files get eaten as argv[0] and the
+    # 'open' signal never fires.
+    def run(argv = ARGV) = app.run([$PROGRAM_NAME, *argv])
 
     def app
       @app ||= Gtk::Application.new(APP_ID, :handles_open).tap do |a|
