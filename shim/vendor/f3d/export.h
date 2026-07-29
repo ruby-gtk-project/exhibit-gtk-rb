@@ -1,0 +1,6 @@
+#pragma once
+#define F3D_EXPORT
+#define F3D_NO_EXPORT
+#define F3D_DEPRECATED
+#define F3D_DEPRECATED_EXPORT
+#define F3D_DEPRECATED_NO_EXPORT
