@@ -107,6 +107,21 @@ class F3DViewer
     @engine.then { |e| if e then load_current end }
   end
 
+  # Add a file to the current scene without clearing it (menu: Add File to Scene).
+  def add_file(path)
+    @engine.then do |e|
+      if e
+        if F3D.scene_supports(e, path) == 1 && F3D.scene_add(e, path) == 1
+          F3D.camera_reset_to_bounds(e)
+          gl_area.queue_render
+          @on_loaded&.call(path)
+        else
+          @on_error&.call(path)
+        end
+      end
+    end
+  end
+
   # Add @file to the scene, reporting success/failure through the callbacks.
   # Requires a live engine (created on realize), so callers ensure the GLArea
   # is mapped first.

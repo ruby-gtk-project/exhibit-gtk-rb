@@ -6,6 +6,7 @@
 
 require 'gtk4'
 require 'adwaita'
+require 'fileutils'
 require_relative 'main_window'
 require_relative 'hdri_manager'
 require_relative 'app_settings'
@@ -41,7 +42,26 @@ module Exhibit
         a.add_action(about_action)
         a.add_action(new_window_action)
         a.set_accels_for_action('app.new-window', ['<Primary><Shift>n'])
+        a.add_action(folder_action('open-hdri-folder') { HdriManager.dir })
+        a.add_action(folder_action('open-configs-folder') { configs_dir })
       end
+    end
+
+    # An action that opens a directory in the file manager (creating it first).
+    def folder_action(name, &dir)
+      Gio::SimpleAction.new(name).tap do |action|
+        action.signal_connect('activate') { launch_dir(dir.call) }
+      end
+    end
+
+    def launch_dir(dir)
+      FileUtils.mkdir_p(dir)
+      Gtk::FileLauncher.new(Gio::File.new_for_path(dir)).launch(app.active_window, nil) {}
+    end
+
+    def configs_dir
+      base = ENV['XDG_DATA_HOME'] || File.join(Dir.home, '.local', 'share')
+      File.join(base, 'exhibit-rb', 'configurations')
     end
 
     def about_action

@@ -24,7 +24,14 @@ module Exhibit
 
     def build
       window.tap do
-        toast_overlay.tap { |to| to.child = split_view }
+        toast_overlay.tap { |to| to.child = breakpoint_bin }
+
+        # Adaptive layout: below 600px the split view collapses so the sidebar
+        # becomes an overlay (BreakpointBin lets us do this without an Adw window).
+        breakpoint_bin.tap do |bin|
+          bin.child = split_view
+          bin.add_breakpoint(collapse_breakpoint)
+        end
 
         split_view.tap do |sv|
           sv.content = stack
@@ -39,10 +46,17 @@ module Exhibit
           hb.pack_end(export_button)
         end
 
+        add_action('open') { open_file_chooser }
+        add_action('add-new') { add_file_chooser }
+        add_view_action('open-external', '<primary><shift>e') { open_external }
         add_action('save-image') { save_image }
         add_view_action('show-shortcuts', '<primary>question') { show_shortcuts }
+        window.add_action(orthographic_action)
+        @application.set_accels_for_action('win.orthographic', ['<primary>5'])
         window.add_action(preset_action)
         add_action('save-preset') { show_save_preset }
+        # Keep the orthographic menu-toggle in sync when a preset changes it.
+        settings.on_change { |key, value, _c| if key == 'orthographic' then orthographic_action.state = GLib::Variant.new(value) end }
         # Deviating from the active preset flips it to "Custom".
         settings.on_change do |_key, _v, category|
           if %i[view other].include?(category) && !@applying_preset then check_preset_deviation end
@@ -276,7 +290,6 @@ module Exhibit
       add_view_action('right-view', '<primary>3') { viewer.right_view }
       add_view_action('top-view', '<primary>7') { viewer.top_view }
       add_view_action('isometric-view', '<primary>9') { viewer.isometric_view }
-      add_view_action('toggle-orthographic', '<primary>5') { toggle_orthographic }
       add_view_action('move-forward', '<primary>w') { viewer.pan_by(0, 0, 1) }
       add_view_action('move-left', '<primary>a') { viewer.pan_by(-1, 0, 0) }
       add_view_action('move-backward', '<primary>s') { viewer.pan_by(0, 0, -1) }
@@ -299,7 +312,44 @@ module Exhibit
       @application.set_accels_for_action("win.#{name}", [accel])
     end
 
-    def toggle_orthographic = settings.set('orthographic', !settings.get('orthographic'))
+    def orthographic_action
+      @orthographic_action ||= Gio::SimpleAction.new('orthographic', nil, GLib::Variant.new(settings.get('orthographic'))).tap do |a|
+        a.signal_connect('change-state') do |action, state|
+          value = as_bool(state)
+          action.state = GLib::Variant.new(value)
+          settings.set('orthographic', value)
+        end
+      end
+    end
+
+    def as_bool(value)
+      if value.is_a?(GLib::Variant) then value.get_boolean else value end
+    end
+
+    # ---- add file / open externally --------------------------------------------
+
+    def add_file_chooser
+      Gtk::FileDialog.new.tap do |d|
+        d.title = 'Add File to Scene'
+        d.open(window, nil) { |dialog, result| on_add_response(dialog, result) }
+      end
+    end
+
+    def on_add_response(dialog, result)
+      finished_file(dialog, result).then { |f| if f then viewer.add_file(f.path) end }
+    end
+
+    def open_external
+      @file.then { |f| if f then Gtk::FileLauncher.new(Gio::File.new_for_path(f)).launch(window, nil) {} end }
+    end
+
+    def breakpoint_bin = @breakpoint_bin ||= Adwaita::BreakpointBin.new.tap { |b| b.set_size_request(360, 200) }
+
+    def collapse_breakpoint
+      Adwaita::Breakpoint.new(Adwaita::BreakpointCondition.parse('max-width: 600px')).tap do |bp|
+        bp.add_setter(split_view, 'collapsed', true)
+      end
+    end
 
     # ---- image export ----------------------------------------------------------
 
@@ -418,12 +468,36 @@ module Exhibit
 
     def primary_menu
       @primary_menu ||= Gio::Menu.new.tap do |m|
-        m.append('New Window', 'app.new-window')
-        m.append('Save as Image…', 'win.save-image')
+        m.append_section(nil, file_section)
         m.append_submenu('Presets', preset_menu)
-        m.append_submenu('Appearance', theme_menu)
+        m.append_section(nil, view_section)
+        m.append_section(nil, folder_section)
         m.append_section(nil, help_section)
         m.append('Quit', 'app.quit')
+      end
+    end
+
+    def file_section
+      Gio::Menu.new.tap do |m|
+        m.append('New Window', 'app.new-window')
+        m.append('Load New File', 'win.open')
+        m.append('Add File to Scene', 'win.add-new')
+        m.append('Export Image…', 'win.save-image')
+        m.append('Open in External App', 'win.open-external')
+      end
+    end
+
+    def view_section
+      Gio::Menu.new.tap do |m|
+        m.append('Orthographic', 'win.orthographic')
+        m.append_submenu('Appearance', theme_menu)
+      end
+    end
+
+    def folder_section
+      Gio::Menu.new.tap do |m|
+        m.append('Open HDRI Folder', 'app.open-hdri-folder')
+        m.append('Open Configurations Folder', 'app.open-configs-folder')
       end
     end
 
