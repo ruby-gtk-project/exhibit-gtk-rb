@@ -8,6 +8,7 @@ require 'gtk4'
 require 'adwaita'
 require_relative 'f3d_viewer'
 require_relative 'settings_model'
+require_relative 'settings_sidebar'
 
 module Exhibit
   class MainWindow
@@ -23,7 +24,7 @@ module Exhibit
 
         split_view.tap do |sv|
           sv.content = stack
-          sv.sidebar = sidebar_scroller
+          sv.sidebar = settings_sidebar.build
         end
 
         header_bar.tap do |hb|
@@ -130,6 +131,7 @@ module Exhibit
     def header_bar = @header_bar ||= Adwaita::HeaderBar.new
     def stack = @stack ||= Gtk::Stack.new
     def settings = @settings ||= SettingsModel.new
+    def settings_sidebar = @settings_sidebar ||= SettingsSidebar.new(settings)
 
     def viewer
       @viewer ||= F3DViewer.new(
@@ -211,19 +213,5 @@ module Exhibit
       end
     end
 
-    def sidebar_scroller
-      @sidebar_scroller ||= Gtk::ScrolledWindow.new.tap do |s|
-        s.width_request = 300
-        s.child = sidebar_placeholder
-      end
-    end
-
-    def sidebar_placeholder
-      @sidebar_placeholder ||= Adwaita::StatusPage.new.tap do |sp|
-        sp.icon_name = 'emblem-system-symbolic'
-        sp.title = 'Settings'
-        sp.description = 'Coming in Phase 3'
-      end
-    end
   end
 end
