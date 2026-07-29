@@ -1,15 +1,26 @@
 # frozen_string_literal: true
 
-# Cross-run persistence: window size, sidebar state, theme, and auto-best, in a
-# small JSON file under $XDG_CONFIG_HOME/exhibit-rb (a GSettings schema would be
-# more GNOME-idiomatic but needs compiling/installing into the Nix store).
+# Cross-run persistence via GSettings (dconf-backed), like upstream. The schema
+# io.github.ruby_gtk_project.Exhibit is compiled into the app by the flake; if
+# it isn't installed (e.g. running lib/ from a source checkout without the nix
+# build) we degrade to in-memory defaults rather than aborting the process.
 
-require 'json'
-require 'fileutils'
+require 'gtk4'
 
 module Exhibit
   module AppSettings
     module_function
+
+    SCHEMA = 'io.github.ruby_gtk_project.Exhibit'
+
+    # public key => [gsettings key, type]
+    MAP = {
+      'width' => ['startup-width', :int],
+      'height' => ['startup-height', :int],
+      'sidebar' => ['startup-sidebar-show', :boolean],
+      'theme' => ['theme', :string],
+      'auto-best' => ['auto-best', :boolean],
+    }.freeze
 
     DEFAULTS = {
       'width' => 840,
@@ -19,26 +30,29 @@ module Exhibit
       'auto-best' => true,
     }.freeze
 
-    def path
-      base = ENV['XDG_CONFIG_HOME'] || File.join(Dir.home, '.config')
-      File.join(base, 'exhibit-rb', 'settings.json')
+    def get(key)
+      gkey, type = MAP[key]
+      if settings then settings.__send__(:"get_#{type}", gkey) else DEFAULTS[key] end
     end
-
-    def get(key) = DEFAULTS.merge(read)[key]
 
     def update(hash)
-      write(read.merge(hash))
+      hash.each do |key, value|
+        gkey, type = MAP[key]
+        if settings then settings.__send__(:"set_#{type}", gkey, value) end
+      end
     end
 
-    def read
-      JSON.parse(File.read(path))
-    rescue StandardError
-      {}
+    def settings
+      unless @resolved
+        @resolved = true
+        @settings = lookup_settings
+      end
+      @settings
     end
 
-    def write(data)
-      FileUtils.mkdir_p(File.dirname(path))
-      File.write(path, JSON.pretty_generate(data))
+    def lookup_settings
+      source = Gio::SettingsSchemaSource.default
+      if source && source.lookup(SCHEMA, true) then Gio::Settings.new(SCHEMA) end
     end
   end
 end

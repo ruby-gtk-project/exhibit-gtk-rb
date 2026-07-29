@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="io.github.ruby_gtk_project.Exhibit" path="/io/github/ruby_gtk_project/Exhibit/">
+    <key name="startup-width" type="i">
+      <default>840</default>
+      <summary>Window width</summary>
+    </key>
+    <key name="startup-height" type="i">
+      <default>600</default>
+      <summary>Window height</summary>
+    </key>
+    <key name="startup-sidebar-show" type="b">
+      <default>true</default>
+      <summary>Whether the settings sidebar is shown</summary>
+    </key>
+    <key name="auto-best" type="b">
+      <default>true</default>
+      <summary>Automatically apply the best preset per file type</summary>
+    </key>
+    <key name="theme" type="s">
+      <choices>
+        <choice value="follow"/>
+        <choice value="light"/>
+        <choice value="dark"/>
+      </choices>
+      <default>'follow'</default>
+      <summary>Colour scheme: follow / light / dark</summary>
+    </key>
+  </schema>
+</schemalist>

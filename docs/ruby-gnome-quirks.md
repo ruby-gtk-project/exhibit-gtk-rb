@@ -60,6 +60,21 @@ f3d 3.5). Fold the reusable ones into the `ruby-gtk` skill's `adwaita-quirks.md`
   (and `save`/`save_finish`); wrap the `*_finish` in a `rescue` — it raises on
   cancel.
 
+## GSettings / dconf
+
+- `Gio::Settings.new(id)` **aborts the process** (GLib assertion) if the schema
+  isn't installed — guard first with
+  `Gio::SettingsSchemaSource.default.lookup(id, true)` (returns nil if missing)
+  and fall back, so a source checkout without the compiled schema doesn't crash.
+- Typed access: `get_int`/`set_int`, `get_boolean`/`set_boolean`,
+  `get_string`/`set_string`.
+- In Nix: install the `.gschema.xml` to `$out/share/glib-2.0/schemas` and run
+  `glib-compile-schemas` (needs `glib` in `nativeBuildInputs`). The **glib setup
+  hook relocates** it to `$out/share/gsettings-schemas/<name>/glib-2.0/schemas`
+  and sets `GSETTINGS_SCHEMA_DIR`; `wrapGAppsHook4` puts it on the wrapper's
+  `XDG_DATA_DIRS`, so the app finds it at runtime. The dconf GIO module (already
+  pulled in by `wrapGAppsHook4`) is the write backend.
+
 ## Build / tooling
 
 - **Nix flakes only see git-tracked files** — a newly created `lib/*.rb` is

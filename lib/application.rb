@@ -12,7 +12,7 @@ require_relative 'app_settings'
 
 module Exhibit
   class Application
-    APP_ID = 'io.github.nokse22.ExhibitRb'
+    APP_ID = 'io.github.ruby_gtk_project.Exhibit'
 
     def build
       HdriManager.seed

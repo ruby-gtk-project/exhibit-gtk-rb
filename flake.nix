@@ -80,7 +80,7 @@
         # gobject-introspection's setup hook only accumulates GI_TYPELIB_PATH
         # (into gappsWrapperArgs) when it runs as a nativeBuildInput; there it
         # scans the buildInputs below for lib/girepository-1.0 typelibs.
-        nativeBuildInputs = [ pkgs.wrapGAppsHook4 pkgs.makeWrapper pkgs.gobject-introspection ];
+        nativeBuildInputs = [ pkgs.wrapGAppsHook4 pkgs.makeWrapper pkgs.gobject-introspection pkgs.glib ];
         # typelibs / schemas / pixbuf loaders wrapGAppsHook4 must collect:
         buildInputs = with pkgs; [
           gtk4 libadwaita gdk-pixbuf pango graphene harfbuzz librsvg gobject-introspection glib
@@ -101,6 +101,11 @@
           # Built-in render presets (ConfigurationStore reads this + the user dir).
           mkdir -p $out/share/exhibit/data
           cp data/configurations.json $out/share/exhibit/data/
+          # GSettings schema for cross-run persistence (dconf-backed). Installed
+          # to the standard schema dir and compiled; wrapGAppsHook4 puts
+          # $out/share on XDG_DATA_DIRS so GSettings finds it at runtime.
+          install -Dm644 data/io.github.ruby_gtk_project.Exhibit.gschema.xml -t $out/share/glib-2.0/schemas
+          glib-compile-schemas $out/share/glib-2.0/schemas
           runHook postInstall
         '';
         # wrapGAppsHook4 assembles gappsWrapperArgs (GI_TYPELIB_PATH, the pixbuf
