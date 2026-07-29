@@ -71,11 +71,13 @@ parity; 6 is minor; 7–8 are optional (no docs / deliberate simplification).
 Stages 2 and 5 add shim functions — do them when reached, rebuilding the shim.
 
 ### Tracker
-- [ ] Stage 1 — HDRI drop on main view
-- [ ] Stage 2 — supported-format filters + validation
-- [ ] Stage 3 — drop-zone visual feedback
-- [ ] Stage 4 — pinch-to-zoom
-- [ ] Stage 5 — About debug info
-- [ ] Stage 6 — sidebar live-state + close button
-- [ ] Stage 7 — Help (optional)
-- [ ] Stage 8 — HDRI thumbnails (optional)
+- [x] Stage 1 — HDRI drop on main view
+- [x] Stage 2 — supported-format filters + validation
+- [x] Stage 3 — drop-zone visual feedback
+- [x] Stage 4 — pinch-to-zoom
+- [x] Stage 5 — About debug info
+- [x] Stage 6 — sidebar live-state + close button
+- [x] Stage 7 — Help (opens the project page)
+- [x] Stage 8 — HDRI thumbnails
+
+**All stages complete — full parity with the fork.**
