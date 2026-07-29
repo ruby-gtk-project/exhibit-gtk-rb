@@ -348,7 +348,7 @@ any class >10 widget methods. Delete dead code. Document Ruby-GNOME quirks disco
 - [x] Phase 4 — background follows theme + Appearance (follow/light/dark) menu; added `Local/NoConditionalAssignment` cop
 - [~] Phase 5 — HDRI: FileRow + HdriManager + XDG seeding done; thumbnails still simplified (filenames)
 - [x] Phase 6 — preset views (front/right/top/iso) + WASD pan + arrow tilt (gimbal) + accels
-- [ ] Phase 7 — orientation preserve + reload + auto-reload
+- [x] Phase 7 — reload + auto-reload (mtime watcher) + preserve orientation (camera state shim)
 - [x] Phase 8 — animation (shim time-range/load + playback loop; done as part of Phase 3)
 - [ ] Phase 9 — presets / configurations (auto-best + save-settings dialog)
 - [x] Phase 10 — image export (save PNG + Open toast)
