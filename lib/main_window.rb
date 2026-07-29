@@ -12,6 +12,7 @@ require_relative 'settings_sidebar'
 require_relative 'shortcuts_dialog'
 require_relative 'configuration_store'
 require_relative 'save_preset_dialog'
+require_relative 'app_settings'
 
 module Exhibit
   class MainWindow
@@ -81,8 +82,23 @@ module Exhibit
 
         setup_camera_actions
 
+        # Restore persisted window/session state and save it on close.
+        split_view.show_sidebar = AppSettings.get('sidebar')
+        settings.set('auto-best', AppSettings.get('auto-best'))
+        window.signal_connect('close-request') { on_close }
+
         @file.then { |f| if f then load_file(f) else show('startup') end }
       end
+    end
+
+    def on_close
+      AppSettings.update(
+        'width' => window.width,
+        'height' => window.height,
+        'sidebar' => split_view.show_sidebar?,
+        'auto-best' => settings.get('auto-best'),
+      )
+      false # allow the close to proceed
     end
 
     # ---- file loading ----------------------------------------------------------
@@ -336,7 +352,7 @@ module Exhibit
       # header, not a window-in-a-window.
       @window ||= Gtk::ApplicationWindow.new(@application).tap do |w|
         w.title = 'Exhibit'
-        w.set_default_size(840, 600)
+        w.set_default_size(AppSettings.get('width'), AppSettings.get('height'))
         w.titlebar = header_bar
         w.child = toast_overlay
       end

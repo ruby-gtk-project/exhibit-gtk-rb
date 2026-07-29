@@ -8,6 +8,7 @@ require 'gtk4'
 require 'adwaita'
 require_relative 'main_window'
 require_relative 'hdri_manager'
+require_relative 'app_settings'
 
 module Exhibit
   class Application
@@ -15,6 +16,7 @@ module Exhibit
 
     def build
       HdriManager.seed
+      apply_theme(AppSettings.get('theme'))
       app.tap do |a|
         a.signal_connect('activate') { open_window(nil) }
         a.signal_connect('open') do |_app, files, _n, _hint|
@@ -82,14 +84,21 @@ module Exhibit
     end
 
     # Stateful string action (follow / light / dark) driving the Adwaita colour
-    # scheme; the menu items target it via "app.theme::<name>".
+    # scheme; the menu items target it via "app.theme::<name>". Persisted so the
+    # choice survives a restart.
     def theme_action
-      Gio::SimpleAction.new('theme', GLib::VariantType.new('s'), GLib::Variant.new('follow')).tap do |action|
-        action.signal_connect('activate') do |act, param|
-          act.state = param
-          apply_theme(param.get_string)
+      Gio::SimpleAction.new('theme', GLib::VariantType.new('s'), GLib::Variant.new(AppSettings.get('theme'))).tap do |action|
+        action.signal_connect('change-state') do |act, state|
+          key = variant_string(state)
+          act.state = GLib::Variant.new(key)
+          apply_theme(key)
+          AppSettings.update('theme' => key)
         end
       end
+    end
+
+    def variant_string(value)
+      if value.is_a?(String) then value else value.get_string end
     end
 
     def apply_theme(name)

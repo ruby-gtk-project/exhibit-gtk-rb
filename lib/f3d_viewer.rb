@@ -187,7 +187,17 @@ class F3DViewer
   end
 
   def on_scroll(dy)
-    @engine.then { |e| if e then F3D.camera_dolly(e, 1 - 0.1 * dy); gl_area.queue_render end }
+    @engine.then do |e|
+      if e
+        # Orthographic cameras have no depth to dolly through, so zoom instead.
+        if @options['scene.camera.orthographic'] == true
+          F3D.camera_zoom(e, 1 - 0.1 * dy)
+        else
+          F3D.camera_dolly(e, 1 - 0.1 * dy)
+        end
+        gl_area.queue_render
+      end
+    end
   end
 
   # ---- preset views + keyboard navigation ------------------------------------
