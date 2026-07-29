@@ -206,9 +206,21 @@ module Exhibit
       nil
     end
 
+    IMAGE_EXTS = %w[hdr exr png jpg jpeg pnm tiff bmp].freeze
+
     def on_drop(value)
-      value.files.first.then { |f| if f then load_file(f.path) end }
+      value.files.first.then { |f| if f then dispatch_drop(f.path) end }
       true
+    end
+
+    # Images dropped on the view become the HDRI/skybox (like the fork); other
+    # supported files load as models.
+    def dispatch_drop(path)
+      if IMAGE_EXTS.include?(File.extname(path).delete('.').downcase)
+        settings_sidebar.hdri_file_row.pick(path)
+      else
+        load_file(path)
+      end
     end
 
     def on_viewer_loaded(path)
