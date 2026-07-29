@@ -580,6 +580,7 @@ module Exhibit
 
     def help_section
       Gio::Menu.new.tap do |m|
+        m.append('Help', 'app.help')
         m.append('Keyboard Shortcuts', 'win.show-shortcuts')
         m.append('About Exhibit', 'app.about')
       end

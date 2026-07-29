@@ -44,6 +44,17 @@ module Exhibit
         a.set_accels_for_action('app.new-window', ['<Primary><Shift>n'])
         a.add_action(folder_action('open-hdri-folder') { HdriManager.dir })
         a.add_action(folder_action('open-configs-folder') { configs_dir })
+        a.add_action(help_action)
+        a.set_accels_for_action('app.help', ['F1'])
+      end
+    end
+
+    # We ship no Yelp help pages, so open the project page instead of help:exhibit.
+    def help_action
+      Gio::SimpleAction.new('help').tap do |action|
+        action.signal_connect('activate') do
+          Gtk::UriLauncher.new('https://github.com/Nokse22/Exhibit').launch(app.active_window, nil) {}
+        end
       end
     end
 

@@ -30,8 +30,10 @@ module Exhibit
         ['<primary>Right', 'Right'],
       ]],
       ['General', [
+        ['F1', 'Help'],
         ['<primary>question', 'Keyboard Shortcuts'],
         ['<primary><shift>n', 'New Window'],
+        ['<primary><shift>e', 'Open in External App'],
         ['<primary>q', 'Quit'],
       ]],
     ].freeze
