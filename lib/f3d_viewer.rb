@@ -63,11 +63,31 @@ class F3DViewer
     @engine.then { |e| if e then F3D.scene_load_animation_time(e, time); gl_area.queue_render end }
   end
 
-  # Re-add the current file (e.g. after changing scene.animation.index, which is
-  # read at scene-add time).
-  def reload
-    @engine.then { |e| if e then load_current end }
+  # Re-add the current file (e.g. after changing scene.animation.index or the up
+  # direction, which are read at scene-add time). load_current recenters the
+  # camera, so with preserve: true we capture and restore the view around it.
+  def reload(preserve: false)
+    @engine.then do |e|
+      if e
+        saved = nil
+        if preserve then saved = camera_state end
+        load_current
+        if saved then self.camera_state = saved end
+      end
+    end
   end
+
+  def camera_state
+    buf = FFI::MemoryPointer.new(:double, 10)
+    @engine.then { |e| if e then F3D.camera_get_state(e, buf) end }
+    buf.read_array_of_double(10)
+  end
+
+  def camera_state=(state)
+    @engine.then { |e| if e then F3D.camera_set_state(e, write_state(state)); gl_area.queue_render end }
+  end
+
+  def write_state(a) = FFI::MemoryPointer.new(:double, 10).tap { |b| b.write_array_of_double(a.map(&:to_f)) }
 
   # Render the current view to a PNG. Needs the GLArea's context current (we're
   # called outside the render callback), so make it current first.

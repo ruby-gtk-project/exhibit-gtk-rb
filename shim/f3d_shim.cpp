@@ -171,4 +171,27 @@ void f3d_camera_set_view_up(engine* e, const double u[3]) {
   catch (...) {}
 }
 
+// Full camera state as 10 doubles: position(3) focalPoint(3) viewUp(3) angle(1).
+// Used to preserve the view across a reload.
+void f3d_camera_get_state(engine* e, double out[10]) {
+  try {
+    auto s = e->getWindow().getCamera().getState();
+    out[0] = s.position[0]; out[1] = s.position[1]; out[2] = s.position[2];
+    out[3] = s.focalPoint[0]; out[4] = s.focalPoint[1]; out[5] = s.focalPoint[2];
+    out[6] = s.viewUp[0]; out[7] = s.viewUp[1]; out[8] = s.viewUp[2];
+    out[9] = s.viewAngle;
+  } catch (...) { for (int i = 0; i < 10; i++) { out[i] = 0.0; } }
+}
+
+void f3d_camera_set_state(engine* e, const double in[10]) {
+  try {
+    f3d::camera_state_t s;
+    s.position = f3d::point3_t{ in[0], in[1], in[2] };
+    s.focalPoint = f3d::point3_t{ in[3], in[4], in[5] };
+    s.viewUp = f3d::vector3_t{ in[6], in[7], in[8] };
+    s.viewAngle = in[9];
+    e->getWindow().getCamera().setState(s);
+  } catch (...) {}
+}
+
 } // extern "C"

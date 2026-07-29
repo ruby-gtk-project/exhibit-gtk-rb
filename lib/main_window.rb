@@ -63,6 +63,11 @@ module Exhibit
         # The background is computed from use-color + bg-color + the theme.
         settings.on_change { |key, _v, _c| if %w[use-color bg-color].include?(key) then update_background_color end }
         style_manager.signal_connect('notify::dark') { update_background_color }
+        # Up direction is read at scene-add time → reload; auto-reload toggles the watcher.
+        settings.on_change do |key, _v, _c|
+          if key == 'up' then reload_preserving end
+          if key == 'auto-reload' then update_auto_reload end
+        end
         settings.sync
         update_background_color
 
@@ -104,10 +109,51 @@ module Exhibit
 
     def on_viewer_loaded(path)
       @loaded_once = true
+      @file_stamp = file_mtime(path)
       window.title = "Exhibit — #{File.basename(path)}"
       show('3d')
       settings_sidebar.refresh_animation
       update_background_color # a reload re-inits the engine, resetting the bg
+    end
+
+    # ---- reload + auto-reload ---------------------------------------------------
+
+    def reload_preserving
+      @file.then { |f| if f then viewer.reload(preserve: true) end }
+    end
+
+    def update_auto_reload
+      if settings.get('auto-reload') then start_file_watch else @watch_running = false end
+    end
+
+    def start_file_watch
+      unless @watch_running
+        @watch_running = true
+        GLib::Timeout.add(500) { tick_file_watch }
+      end
+    end
+
+    def tick_file_watch
+      if @watch_running then check_file_changed end
+      @watch_running
+    end
+
+    def check_file_changed
+      @file.then do |f|
+        if f
+          stamp = file_mtime(f)
+          if stamp && stamp != @file_stamp
+            @file_stamp = stamp
+            reload_preserving
+          end
+        end
+      end
+    end
+
+    def file_mtime(path)
+      File.mtime(path).to_f
+    rescue StandardError
+      nil
     end
 
     # Effective background: the custom colour when "Use Custom Color" is on,

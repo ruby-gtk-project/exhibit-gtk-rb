@@ -46,4 +46,6 @@ module F3D
   attach_function :camera_get_focal,    :f3d_camera_get_focal, [:pointer, :pointer], :void
   attach_function :camera_set_focal,    :f3d_camera_set_focal, [:pointer, :pointer], :void
   attach_function :camera_set_view_up,  :f3d_camera_set_view_up, [:pointer, :pointer], :void
+  attach_function :camera_get_state,     :f3d_camera_get_state, [:pointer, :pointer], :void
+  attach_function :camera_set_state,     :f3d_camera_set_state, [:pointer, :pointer], :void
 end
