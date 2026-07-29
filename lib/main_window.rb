@@ -32,7 +32,10 @@ module Exhibit
           hb.pack_start(open_button)
           hb.pack_end(menu_button)
           hb.pack_end(sidebar_button)
+          hb.pack_end(export_button)
         end
+
+        add_action('save-image') { save_image }
 
         home_button.signal_connect('clicked') { viewer.reset_to_bounds }
         open_button.signal_connect('clicked') { open_file_chooser }
@@ -146,15 +149,62 @@ module Exhibit
       add_view_action('tilt-right', '<primary>Right') { viewer.tilt_by(1, 0) }
     end
 
-    def add_view_action(name, accel, &block)
+    def add_action(name, &block)
       Gio::SimpleAction.new(name).tap do |action|
         action.signal_connect('activate') { block.call }
         window.add_action(action)
-        @application.set_accels_for_action("win.#{name}", [accel])
       end
     end
 
+    def add_view_action(name, accel, &block)
+      add_action(name, &block)
+      @application.set_accels_for_action("win.#{name}", [accel])
+    end
+
     def toggle_orthographic = settings.set('orthographic', !settings.get('orthographic'))
+
+    # ---- image export ----------------------------------------------------------
+
+    def save_image
+      Gtk::FileDialog.new.tap do |d|
+        d.title = 'Save Image'
+        d.initial_name = "#{export_basename}.png"
+        d.save(window, nil) { |dialog, result| on_save_response(dialog, result) }
+      end
+    end
+
+    def export_basename
+      base = 'exhibit'
+      @file.then { |f| if f then base = File.basename(f, '.*') end }
+      base
+    end
+
+    def on_save_response(dialog, result)
+      saved_path(dialog, result).then { |path| if path then export_to(path) end }
+    end
+
+    def saved_path(dialog, result)
+      dialog.save_finish(result)&.path
+    rescue StandardError
+      nil
+    end
+
+    def export_to(path)
+      if viewer.save_png(path)
+        send_open_toast(path)
+      else
+        send_toast("Couldn't save image")
+      end
+    end
+
+    def send_open_toast(path)
+      Adwaita::Toast.new('Image saved').tap do |t|
+        t.button_label = 'Open'
+        t.action_name = 'app.show-image-externally'
+        t.action_target = GLib::Variant.new(path)
+        toast_overlay.add_toast(t)
+      end
+    end
 
     # ---- widgets ---------------------------------------------------------------
 
@@ -213,6 +263,14 @@ module Exhibit
       end
     end
 
+    def export_button
+      @export_button ||= Gtk::Button.new.tap do |b|
+        b.icon_name = 'camera-photo-symbolic'
+        b.tooltip_text = 'Save as Image'
+        b.action_name = 'win.save-image'
+      end
+    end
+
     def menu_button
       @menu_button ||= Gtk::MenuButton.new.tap do |b|
         b.icon_name = 'open-menu-symbolic'
@@ -222,6 +280,7 @@ module Exhibit
 
     def primary_menu
       @primary_menu ||= Gio::Menu.new.tap do |m|
+        m.append('Save as Image…', 'win.save-image')
         m.append_submenu('Appearance', theme_menu)
         m.append('Quit', 'app.quit')
       end

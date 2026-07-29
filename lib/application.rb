@@ -35,7 +35,20 @@ module Exhibit
         a.add_action(quit)
         a.set_accels_for_action('app.quit', ['<Primary>q'])
         a.add_action(theme_action)
+        a.add_action(show_image_action)
       end
+    end
+
+    # Launches a saved image in the user's default viewer (the "Open" button on
+    # the export-succeeded toast targets this).
+    def show_image_action
+      Gio::SimpleAction.new('show-image-externally', GLib::VariantType.new('s')).tap do |action|
+        action.signal_connect('activate') { |_a, param| launch_external(param.get_string) }
+      end
+    end
+
+    def launch_external(path)
+      Gtk::FileLauncher.new(Gio::File.new_for_path(path)).launch(app.active_window, nil) { }
     end
 
     # Stateful string action (follow / light / dark) driving the Adwaita colour

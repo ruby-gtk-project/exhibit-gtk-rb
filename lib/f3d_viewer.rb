@@ -69,6 +69,19 @@ class F3DViewer
     @engine.then { |e| if e then load_current end }
   end
 
+  # Render the current view to a PNG. Needs the GLArea's context current (we're
+  # called outside the render callback), so make it current first.
+  def save_png(path)
+    saved = false
+    @engine.then do |e|
+      if e
+        gl_area.make_current
+        saved = F3D.render_to_png(e, path) == 1
+      end
+    end
+    saved
+  end
+
   def load(path)
     @file = path
     @engine.then { |e| if e then load_current end }
