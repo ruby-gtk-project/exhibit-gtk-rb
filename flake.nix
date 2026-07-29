@@ -31,7 +31,7 @@
         # gtk4 gem's strict pkg-config resolution work (rubycam's trick).
         inputsFrom = with pkgs; [ gtk4 glib cairo pango gdk-pixbuf at-spi2-core ];
 
-        nativeBuildInputs = [ pkgs.pkg-config ];
+        nativeBuildInputs = with pkgs; [ pkg-config git git-lfs lefthook ];
         buildInputs = with pkgs; [
           ruby bundler
           libyaml openssl libffi
