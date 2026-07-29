@@ -34,8 +34,13 @@ module Exhibit
         end
 
         split_view.tap do |sv|
-          sv.content = stack
+          sv.content = drop_overlay
           sv.sidebar = settings_sidebar.build
+        end
+
+        drop_overlay.tap do |ov|
+          ov.child = stack
+          ov.add_overlay(drop_hint)
         end
 
         header_bar.tap do |hb|
@@ -76,7 +81,9 @@ module Exhibit
         end
 
         window.add_controller(drop_target)
-        drop_target.signal_connect('drop') { |_t, value, _x, _y| on_drop(value) }
+        drop_target.signal_connect('enter') { |_t, _x, _y| drop_hint.reveal_child = true; :copy }
+        drop_target.signal_connect('leave') { drop_hint.reveal_child = false }
+        drop_target.signal_connect('drop') { |_t, value, _x, _y| drop_hint.reveal_child = false; on_drop(value) }
 
         # Forward every :view setting to the viewer as an f3d option, then push
         # the defaults so the engine starts configured (grid, AA, materials, …).
@@ -451,6 +458,27 @@ module Exhibit
 
     def header_bar = @header_bar ||= Adwaita::HeaderBar.new
     def stack = @stack ||= Gtk::Stack.new
+
+    def drop_overlay = @drop_overlay ||= Gtk::Overlay.new
+
+    # Revealed over the view while a drag hovers the window. can_target=false so
+    # the drop itself still reaches the window's drop target underneath.
+    def drop_hint
+      @drop_hint ||= Gtk::Revealer.new.tap do |r|
+        r.transition_type = :crossfade
+        r.reveal_child = false
+        r.can_target = false
+        r.child = drop_hint_page
+      end
+    end
+
+    def drop_hint_page
+      Adwaita::StatusPage.new.tap do |sp|
+        sp.icon_name = 'document-open-symbolic'
+        sp.title = 'Drop to Open'
+        sp.description = 'Release a 3D model or HDRI to load it'
+      end
+    end
     def settings = @settings ||= SettingsModel.new
     def settings_sidebar = @settings_sidebar ||= SettingsSidebar.new(settings, viewer)
 
