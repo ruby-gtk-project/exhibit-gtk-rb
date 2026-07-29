@@ -93,6 +93,11 @@
           mkdir -p $out/share/exhibit
           cp -r bin lib $out/share/exhibit/
           install -Dm755 ${f3dShim}/lib/libf3dshim.so $out/share/exhibit/shim/libf3dshim.so
+          # Default HDRIs (Git LFS assets) — HdriManager seeds these into
+          # $XDG_DATA_HOME on first run. If the tree wasn't `git lfs pull`ed they
+          # are pointer stubs and HdriManager skips them.
+          mkdir -p $out/share/exhibit/hdris
+          cp examples/hdris/*.hdr $out/share/exhibit/hdris/ 2>/dev/null || true
           runHook postInstall
         '';
         # wrapGAppsHook4 assembles gappsWrapperArgs (GI_TYPELIB_PATH, the pixbuf

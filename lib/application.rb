@@ -7,12 +7,14 @@
 require 'gtk4'
 require 'adwaita'
 require_relative 'main_window'
+require_relative 'hdri_manager'
 
 module Exhibit
   class Application
     APP_ID = 'io.github.nokse22.ExhibitRb'
 
     def build
+      HdriManager.seed
       app.tap do |a|
         a.signal_connect('activate') { open_window(nil) }
         a.signal_connect('open') do |_app, files, _n, _hint|
