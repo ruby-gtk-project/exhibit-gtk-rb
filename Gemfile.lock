@@ -1,6 +1,9 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    adwaita (4.3.6)
+      gtk4 (= 4.3.6)
+      rake
     atk (4.3.6)
       glib2 (= 4.3.6)
       rake
@@ -10,6 +13,7 @@ GEM
     cairo-gobject (4.3.6)
       cairo (>= 1.16.2)
       glib2 (= 4.3.6)
+    ffi (1.17.4)
     ffi (1.17.4-x86_64-linux-gnu)
     fiddle (1.1.8)
     gdk4 (4.3.6)
@@ -50,9 +54,11 @@ GEM
       matrix
 
 PLATFORMS
+  ruby
   x86_64-linux-gnu
 
 DEPENDENCIES
+  adwaita (= 4.3.6)
   ffi
   gtk4
 

@@ -6,3 +6,9 @@ pre-commit:
     lfs-guard:
       # Refuse to commit binaries that aren't in Git LFS.
       run: scripts/lfs-guard.sh
+    rubocop:
+      # Lint staged Ruby against the house style (custom Local/* cops).
+      # `env -u` strips any inherited GEM_HOME/GEM_PATH so a stray global
+      # gemset can't shadow the nix rubocop's own gems and crash it.
+      glob: "*.rb"
+      run: env -u GEM_HOME -u GEM_PATH -u BUNDLE_PATH -u BUNDLE_GEMFILE -u BUNDLE_BIN rubocop --force-exclusion {staged_files}
