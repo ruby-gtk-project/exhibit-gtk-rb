@@ -106,6 +106,7 @@ module Exhibit
         # Restore persisted window/session state and save it on close.
         split_view.show_sidebar = AppSettings.get('sidebar')
         settings.set('auto-best', AppSettings.get('auto-best'))
+        split_view.signal_connect('notify::show-sidebar') { AppSettings.update('sidebar' => split_view.show_sidebar?) }
         window.signal_connect('close-request') { on_close }
 
         @file.then { |f| if f then load_file(f) else show('startup') end }
@@ -480,7 +481,9 @@ module Exhibit
       end
     end
     def settings = @settings ||= SettingsModel.new
-    def settings_sidebar = @settings_sidebar ||= SettingsSidebar.new(settings, viewer)
+    def settings_sidebar
+      @settings_sidebar ||= SettingsSidebar.new(settings, viewer, on_close: -> { split_view.show_sidebar = false })
+    end
 
     def viewer
       @viewer ||= F3DViewer.new(

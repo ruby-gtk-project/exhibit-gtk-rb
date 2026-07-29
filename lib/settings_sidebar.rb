@@ -15,9 +15,10 @@ module Exhibit
     UP_DIRECTIONS = %w[-X +X -Y +Y -Z +Z].freeze
     SPRITE_TYPES = %w[sphere gaussian].freeze
 
-    def initialize(model, viewer)
+    def initialize(model, viewer, on_close: nil)
       @model = model
       @viewer = viewer
+      @on_close = on_close
       @syncing = false
       @playing = false
     end
@@ -36,7 +37,7 @@ module Exhibit
 
     def build
       root.tap do |b|
-        b.append(switcher)
+        b.append(header_box)
         b.append(view_stack)
 
         view_stack.tap do |vs|
@@ -379,12 +380,32 @@ module Exhibit
     def root = @root ||= Gtk::Box.new(:vertical, 0)
     def view_stack = @view_stack ||= Adwaita::ViewStack.new.tap { |s| s.vexpand = true }
 
+    def header_box
+      Gtk::Box.new(:horizontal, 6).tap do |b|
+        b.margin_top = 6
+        b.margin_bottom = 6
+        b.margin_start = 6
+        b.margin_end = 6
+        b.append(switcher)
+        b.append(close_button)
+      end
+    end
+
     def switcher
       @switcher ||= Adwaita::ViewSwitcher.new.tap do |sw|
         sw.stack = view_stack
         sw.policy = :wide
-        sw.margin_top = 6
-        sw.margin_bottom = 6
+        sw.hexpand = true
+      end
+    end
+
+    def close_button
+      @close_button ||= Gtk::Button.new.tap do |b|
+        b.icon_name = 'go-next-symbolic'
+        b.tooltip_text = 'Close Sidebar'
+        b.valign = :center
+        b.add_css_class('flat')
+        b.signal_connect('clicked') { @on_close&.call }
       end
     end
   end
