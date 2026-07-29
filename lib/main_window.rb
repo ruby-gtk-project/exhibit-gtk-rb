@@ -22,13 +22,8 @@ module Exhibit
         toast_overlay.tap { |to| to.child = split_view }
 
         split_view.tap do |sv|
-          sv.content = content_view
-          sv.sidebar = sidebar_view
-        end
-
-        content_view.tap do |tv|
-          tv.add_top_bar(header_bar)
-          tv.content = stack
+          sv.content = stack
+          sv.sidebar = sidebar_scroller
         end
 
         header_bar.tap do |hb|
@@ -112,9 +107,13 @@ module Exhibit
     # ---- widgets ---------------------------------------------------------------
 
     def window
+      # Gtk::ApplicationWindow (Adwaita's is broken in the bindings) shows a
+      # default titlebar; make our HeaderBar *be* the titlebar so we get one
+      # header, not a window-in-a-window.
       @window ||= Gtk::ApplicationWindow.new(@application).tap do |w|
         w.title = 'Exhibit'
         w.set_default_size(840, 600)
+        w.titlebar = header_bar
         w.child = toast_overlay
       end
     end
@@ -128,7 +127,6 @@ module Exhibit
       end
     end
 
-    def content_view = @content_view ||= Adwaita::ToolbarView.new
     def header_bar = @header_bar ||= Adwaita::HeaderBar.new
     def stack = @stack ||= Gtk::Stack.new
     def settings = @settings ||= SettingsModel.new
@@ -213,15 +211,11 @@ module Exhibit
       end
     end
 
-    def sidebar_view
-      @sidebar_view ||= Adwaita::ToolbarView.new.tap do |tv|
-        tv.add_top_bar(sidebar_header)
-        tv.content = sidebar_placeholder
+    def sidebar_scroller
+      @sidebar_scroller ||= Gtk::ScrolledWindow.new.tap do |s|
+        s.width_request = 300
+        s.child = sidebar_placeholder
       end
-    end
-
-    def sidebar_header
-      @sidebar_header ||= Adwaita::HeaderBar.new.tap { |hb| hb.title_widget = Gtk::Label.new('Settings') }
     end
 
     def sidebar_placeholder
