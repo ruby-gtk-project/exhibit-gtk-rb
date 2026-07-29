@@ -1,0 +1,35 @@
+ISO-10303-21;
+HEADER;
+FILE_DESCRIPTION(('Open CASCADE Model'),'2;1');
+FILE_NAME('Open CASCADE Shape Model','2024-07-29T14:04:13',('Author'),(
+    'Open CASCADE'),'Open CASCADE STEP processor 7.6','Open CASCADE 7.6'
+  ,'Unknown');
+INVALID
+INVALID
+DATA;
+#1 = APPLICATION_PROTOCOL_DEFINITION('international standard',
+  'automotive_design',2000,#2);
+#2 = APPLICATION_CONTEXT(
+  'core data for automotive mechanical design processes');
+#3 = SHAPE_DEFINITION_REPRESENTATION(#4,#10);
+#4 = PRODUCT_DEFINITION_SHAPE('','',#5);
+#5 = PRODUCT_DEFINITION('design','',#6,#9);
+#6 = PRODUCT_DEFINITION_FORMATION('','',#7);
+#7 = PRODUCT('F3D logo','F3D logo','',(#8));
+#8 = PRODUCT_CONTEXT('',#2,'mechanical');
+#9 = PRODUCT_DEFINITION_CONTEXT('part definition',#2,'design');
+#10 = SHAPE_REPRESENTATION('',(#11,#15,#183),#351);
+#11 = AXIS2_PLACEMENT_3D('',#12,#13,#14);
+#12 = CARTESIAN_POINT('',(0.,0.,0.));
+#13 = DIRECTION('',(0.,0.,1.));
+#14 = DIRECTION('',(1.,0.,-0.));
+#15 = SHELL_BASED_SURFACE_MODEL('',(#16));
+#16 = CLOSED_SHELL('',(#17,#106,#152,#177));
+#17 = ADVANCED_FACE('',(#18),#32,.T.);
+#18 = FACE_BOUND('',#19,.T.);
+#19 = EDGE_LOOP('',(#20,#54,#81));
+#20 = ORIENTED_EDGE('',*,*,#21,.T.);
+#21 = EDGE_CURVE('',#22,#24,#26,.T.);
+#22 = VERTEX_POINT('',#23);
+#23 = CARTESIAN_POINT('',(2.,-0.25,4.5));
+#24 = VERTEX_POINT('',#25);
