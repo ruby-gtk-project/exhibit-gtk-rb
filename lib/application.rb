@@ -36,7 +36,37 @@ module Exhibit
         a.set_accels_for_action('app.quit', ['<Primary>q'])
         a.add_action(theme_action)
         a.add_action(show_image_action)
+        a.add_action(about_action)
+        a.add_action(new_window_action)
+        a.set_accels_for_action('app.new-window', ['<Primary><Shift>n'])
       end
+    end
+
+    def about_action
+      Gio::SimpleAction.new('about').tap { |action| action.signal_connect('activate') { show_about } }
+    end
+
+    def new_window_action
+      Gio::SimpleAction.new('new-window').tap { |action| action.signal_connect('activate') { open_window(nil) } }
+    end
+
+    def show_about
+      Adwaita::AboutDialog.new.tap do |dialog|
+        dialog.application_name = 'Exhibit'
+        dialog.version = '0.1.0'
+        dialog.developer_name = 'Nokse — Ruby GTK4 port'
+        dialog.website = 'https://github.com/Nokse22/Exhibit'
+        dialog.license_type = Gtk::License::GPL_3_0
+        dialog.comments = f3d_version
+        dialog.add_link('libf3d', 'https://f3d.app')
+        dialog.present(app.active_window)
+      end
+    end
+
+    def f3d_version
+      buf = FFI::MemoryPointer.new(:char, 256)
+      F3D.lib_version(buf, 256)
+      buf.read_string
     end
 
     # Launches a saved image in the user's default viewer (the "Open" button on

@@ -62,6 +62,16 @@ void f3d_log_set_verbose(int level, int force_stderr) {
   } catch (...) {}
 }
 
+// Writes "f3d <version> · VTK <version>" into buf (used by the About dialog).
+void f3d_lib_version(char* buf, int len) {
+  try {
+    auto info = engine::getLibInfo();
+    std::string s = "f3d " + info.VersionFull + " · VTK " + info.VTKVersion;
+    std::strncpy(buf, s.c_str(), len - 1);
+    buf[len - 1] = '\0';
+  } catch (...) { if (len > 0) { buf[0] = '\0'; } }
+}
+
 // ---- scene ------------------------------------------------------------------
 
 int f3d_scene_supports(engine* e, const char* path) {

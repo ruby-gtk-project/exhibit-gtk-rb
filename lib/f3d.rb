@@ -17,6 +17,7 @@ module F3D
   attach_function :engine_free,    :f3d_engine_free, [:pointer], :void
   attach_function :autoload_plugins, :f3d_autoload_plugins, [], :void
   attach_function :log_set_verbose,  :f3d_log_set_verbose, [:int, :int], :void
+  attach_function :lib_version,       :f3d_lib_version, [:pointer, :int], :void
 
   # scene
   attach_function :scene_supports, :f3d_scene_supports, [:pointer, :string], :int

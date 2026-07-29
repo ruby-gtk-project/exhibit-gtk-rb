@@ -9,6 +9,7 @@ require 'adwaita'
 require_relative 'f3d_viewer'
 require_relative 'settings_model'
 require_relative 'settings_sidebar'
+require_relative 'shortcuts_dialog'
 
 module Exhibit
   class MainWindow
@@ -36,6 +37,7 @@ module Exhibit
         end
 
         add_action('save-image') { save_image }
+        add_view_action('show-shortcuts', '<primary>question') { show_shortcuts }
 
         home_button.signal_connect('clicked') { viewer.reset_to_bounds }
         open_button.signal_connect('clicked') { open_file_chooser }
@@ -280,11 +282,22 @@ module Exhibit
 
     def primary_menu
       @primary_menu ||= Gio::Menu.new.tap do |m|
+        m.append('New Window', 'app.new-window')
         m.append('Save as Image…', 'win.save-image')
         m.append_submenu('Appearance', theme_menu)
+        m.append_section(nil, help_section)
         m.append('Quit', 'app.quit')
       end
     end
+
+    def help_section
+      Gio::Menu.new.tap do |m|
+        m.append('Keyboard Shortcuts', 'win.show-shortcuts')
+        m.append('About Exhibit', 'app.about')
+      end
+    end
+
+    def show_shortcuts = ShortcutsDialog.new(window).present
 
     def theme_menu
       Gio::Menu.new.tap do |m|
